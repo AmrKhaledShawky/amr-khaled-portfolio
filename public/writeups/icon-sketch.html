@@ -1,0 +1,836 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Icon Sketch | GaslightCTF</title>
+
+    <style>
+      :root {
+        color-scheme: dark;
+
+        --bg: #080b12;
+        --surface: #0f141d;
+        --surface-soft: #141b27;
+
+        --border: rgba(255, 255, 255, 0.1);
+
+        --text: #f1f1f1;
+        --muted: #aeb6c5;
+
+        --accent: #ffa600;
+        --accent-soft: #ffd28a;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        max-width: 920px;
+
+        margin: 0 auto;
+
+        padding: 40px 24px 96px;
+
+        background: var(--bg);
+
+        color: var(--text);
+
+        font:
+          16px/1.75
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+      }
+
+      /* =========================
+         HEADER
+      ========================= */
+
+      header {
+        margin-bottom: 60px;
+
+        padding-bottom: 32px;
+
+        border-bottom: 1px solid var(--border);
+      }
+
+      .eyebrow {
+        margin: 0 0 12px;
+
+        color: var(--accent);
+
+        font-size: 0.75rem;
+        font-weight: 800;
+
+        letter-spacing: 0.16em;
+
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3 {
+        line-height: 1.2;
+      }
+
+      h1 {
+        margin: 0 0 18px;
+
+        color: var(--accent);
+
+        font-size: clamp(2.2rem, 6vw, 4rem);
+      }
+
+      h2 {
+        margin: 0 0 20px;
+
+        font-size: 1.9rem;
+      }
+
+      h3 {
+        margin: 42px 0 14px;
+
+        color: var(--accent-soft);
+
+        font-size: 1.3rem;
+      }
+
+      p {
+        color: var(--muted);
+      }
+
+      strong {
+        color: var(--text);
+      }
+
+      code {
+        color: var(--accent-soft);
+
+        font-family:
+          "JetBrains Mono",
+          "Fira Code",
+          Consolas,
+          monospace;
+      }
+
+      /* =========================
+         WRITEUP SECTIONS
+      ========================= */
+
+      .writeup-section {
+        margin: 75px 0;
+      }
+
+      .section-number {
+        display: block;
+
+        margin-bottom: 10px;
+
+        color: rgba(255, 166, 0, 0.55);
+
+        font-size: 0.75rem;
+        font-weight: 800;
+
+        letter-spacing: 0.15em;
+      }
+
+      .writeup-section p {
+        margin: 0 0 22px;
+
+        color: var(--muted);
+
+        font-size: 17px;
+        line-height: 1.8;
+      }
+
+      /* =========================
+         IMAGES
+      ========================= */
+
+      .writeup-image {
+        width: 100%;
+
+        margin: 34px auto;
+      }
+
+      .writeup-image img {
+        display: block;
+
+        width: 100%;
+        max-width: 900px;
+
+        height: auto;
+
+        margin: 0 auto;
+
+        border: 1px solid var(--border);
+
+        border-radius: 12px;
+
+        background: var(--surface);
+
+        box-shadow:
+          0 18px 45px rgba(0, 0, 0, 0.35);
+
+        transition:
+          transform 0.3s ease,
+          border-color 0.3s ease,
+          box-shadow 0.3s ease;
+      }
+
+      .writeup-image img:hover {
+        transform: translateY(-3px);
+
+        border-color: rgba(255, 166, 0, 0.3);
+
+        box-shadow:
+          0 24px 55px rgba(0, 0, 0, 0.45);
+      }
+
+      .writeup-image figcaption {
+        margin-top: 11px;
+
+        color: #737c8b;
+
+        font-size: 0.8rem;
+
+        text-align: center;
+      }
+
+      /* =========================
+         CODE BLOCKS
+      ========================= */
+
+      pre {
+        margin: 28px 0;
+
+        padding: 20px;
+
+        overflow-x: auto;
+
+        border: 1px solid var(--border);
+
+        border-radius: 10px;
+
+        background: #0b0f16;
+
+        color: #e7edf6;
+
+        line-height: 1.65;
+      }
+
+      pre code {
+        color: #e7edf6;
+      }
+
+      /* =========================
+         BLOCKQUOTE
+      ========================= */
+
+      blockquote {
+        margin: 30px 0;
+
+        padding: 16px 20px;
+
+        border-left: 3px solid var(--accent);
+
+        border-radius: 0 8px 8px 0;
+
+        background: var(--surface-soft);
+
+        color: var(--accent-soft);
+      }
+
+      /* =========================
+         EVIDENCE BOX
+      ========================= */
+
+      .evidence-box {
+        margin: 30px 0;
+
+        padding: 20px;
+
+        border-left: 3px solid var(--accent);
+
+        border-radius: 0 10px 10px 0;
+
+        background: rgba(255, 166, 0, 0.05);
+      }
+
+      .evidence-label {
+        display: block;
+
+        margin-bottom: 10px;
+
+        color: var(--accent);
+
+        font-size: 0.75rem;
+        font-weight: 800;
+
+        letter-spacing: 0.12em;
+
+        text-transform: uppercase;
+      }
+
+      .evidence-box code {
+        word-break: break-all;
+
+        color: var(--text);
+      }
+
+      /* =========================
+         FLAG FORMAT
+      ========================= */
+
+      .flag-format {
+        display: inline-block;
+
+        margin: 8px 0 24px;
+
+        padding: 10px 16px;
+
+        border: 1px solid rgba(255, 166, 0, 0.25);
+
+        border-radius: 8px;
+
+        background: rgba(255, 166, 0, 0.05);
+
+        color: var(--accent);
+      }
+
+      /* =========================
+         FLAG BOX
+      ========================= */
+
+      .flag-box {
+        margin: 42px 0;
+
+        padding: 28px 22px;
+
+        border: 1px solid rgba(255, 166, 0, 0.35);
+
+        border-radius: 12px;
+
+        background:
+          linear-gradient(
+            135deg,
+            rgba(255, 166, 0, 0.08),
+            rgba(255, 166, 0, 0.02)
+          );
+
+        box-shadow:
+          0 18px 45px rgba(0, 0, 0, 0.3);
+
+        text-align: center;
+      }
+
+      .flag-label {
+        display: block;
+
+        margin-bottom: 12px;
+
+        color: var(--accent);
+
+        font-size: 0.7rem;
+        font-weight: 800;
+
+        letter-spacing: 0.16em;
+      }
+
+      .flag-box code {
+        color: var(--text);
+
+        font-size: 17px;
+
+        word-break: break-all;
+      }
+
+      /* =========================
+         TWO IMAGE LAYOUT
+      ========================= */
+
+      .evidence-grid {
+        display: grid;
+
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+
+        gap: 24px;
+
+        margin: 35px 0;
+      }
+
+      .evidence-grid .writeup-image {
+        margin: 0;
+      }
+
+      /* =========================
+         CONCLUSION
+      ========================= */
+
+      .writeup-conclusion {
+        padding-top: 40px;
+
+        border-top: 1px solid var(--border);
+      }
+
+      .conclusion-line {
+        color: var(--accent) !important;
+
+        font-weight: 600;
+      }
+
+      /* =========================
+         MOBILE
+      ========================= */
+
+      @media (max-width: 700px) {
+        body {
+          padding: 32px 18px 70px;
+        }
+
+        .writeup-section {
+          margin: 55px 0;
+        }
+
+        .writeup-section h2 {
+          font-size: 1.6rem;
+        }
+
+        .writeup-section p {
+          font-size: 16px;
+        }
+
+        .evidence-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .flag-box {
+          padding: 22px 14px;
+        }
+
+        .flag-box code {
+          font-size: 14px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+
+    <!--
+      React's WriteupDetail component removes this header
+      before rendering the HTML content.
+    -->
+    <header>
+      <p class="eyebrow">GaslightCTF · Steganography</p>
+
+      <h1>Icon Sketch</h1>
+
+      <p>
+        A steganography challenge involving a seemingly ordinary PNG
+        competition icon and a series of hidden encoded clues.
+      </p>
+    </header>
+
+
+    <main>
+
+      <!-- =========================
+           01 — CHALLENGE OVERVIEW
+      ========================== -->
+
+      <section class="writeup-section">
+
+        <span class="section-number">01</span>
+
+        <h2>Challenge Overview</h2>
+
+        <p>
+          Hello there! Today, I'm going to walk you through solving
+          the <strong>Icon Sketch</strong> challenge from GaslightCTF.
+        </p>
+
+        <p>
+          The challenge initially presents an ordinary PNG icon.
+          The objective is to investigate the file and uncover the
+          hidden information contained within it.
+        </p>
+
+        <figure class="writeup-image">
+          <img
+            src="./images/icon-sketch-01-overview.png"
+            alt="GaslightCTF Icon Sketch challenge overview"
+          />
+
+          <figcaption>
+            Icon Sketch challenge overview.
+          </figcaption>
+        </figure>
+
+      </section>
+
+
+      <!-- =========================
+           02 — INITIAL INSPECTION
+      ========================== -->
+
+      <section class="writeup-section">
+
+        <span class="section-number">02</span>
+
+        <h2>Initial Inspection</h2>
+
+        <p>
+          I started by exploring the provided icon. It was a
+          <code>.png</code> image representing the competition,
+          and at first glance it did not contain any visible flag
+          or anything obviously suspicious.
+        </p>
+
+        <figure class="writeup-image">
+          <img
+            src="./images/icon-sketch-02-icon.png"
+            alt="Original Icon Sketch PNG"
+          />
+
+          <figcaption>
+            The original PNG icon provided by the challenge.
+          </figcaption>
+        </figure>
+
+        <blockquote>
+          Sometimes the most interesting information is not visible
+          in the image itself.
+        </blockquote>
+
+      </section>
+
+
+      <!-- =========================
+           03 — METADATA ANALYSIS
+      ========================== -->
+
+      <section class="writeup-section">
+
+        <span class="section-number">03</span>
+
+        <h2>Metadata Analysis</h2>
+
+        <p>
+          I decided to inspect the metadata of the image using
+          <code>exiftool</code>.
+        </p>
+
+        <p>
+          This was where things became interesting. Several metadata
+          fields contained values that appeared to be encoded using
+          Base64.
+        </p>
+
+        <figure class="writeup-image">
+          <img
+            src="./images/icon-sketch-03-exif.png"
+            alt="ExifTool metadata output"
+          />
+
+          <figcaption>
+            ExifTool output revealing suspicious metadata fields.
+          </figcaption>
+        </figure>
+
+      </section>
+
+
+      <!-- =========================
+           04 — BASE64
+      ========================== -->
+
+      <section class="writeup-section">
+
+        <span class="section-number">04</span>
+
+        <h2>Decoding the Metadata</h2>
+
+        <p>
+          The <strong>Document Name</strong>,
+          <strong>Artwork Title</strong>, and
+          <strong>Title</strong> fields contained Base64-formatted
+          values.
+        </p>
+
+        <p>
+          I decoded all of them using CyberChef.
+        </p>
+
+        <figure class="writeup-image">
+          <img
+            src="./images/icon-sketch-04-base64.png"
+            alt="Base64 decoding using CyberChef"
+          />
+
+          <figcaption>
+            Decoding the suspicious metadata values using CyberChef.
+          </figcaption>
+        </figure>
+
+        <p>
+          After decoding the values, it became clear that the results
+          were related and that the different pieces needed to be
+          combined to recover the hidden information.
+        </p>
+
+      </section>
+
+
+      <!-- =========================
+           05 — DECODED VALUES
+      ========================== -->
+
+      <section class="writeup-section">
+
+        <span class="section-number">05</span>
+
+        <h2>Analyzing the Decoded Values</h2>
+
+        <p>
+          The decoded values provided additional clues. I examined
+          each result individually and compared the outputs to determine
+          how they were connected.
+        </p>
+
+        <div class="evidence-grid">
+
+          <figure class="writeup-image">
+            <img
+              src="./images/icon-sketch-05-decode-1.png"
+              alt="First decoded value"
+            />
+
+            <figcaption>
+              First decoded value.
+            </figcaption>
+          </figure>
+
+          <figure class="writeup-image">
+            <img
+              src="./images/icon-sketch-06-decode-2.png"
+              alt="Second decoded value"
+            />
+
+            <figcaption>
+              Second decoded value.
+            </figcaption>
+          </figure>
+
+        </div>
+
+      </section>
+
+
+      <!-- =========================
+           06 — HEX
+      ========================== -->
+
+      <section class="writeup-section">
+
+        <span class="section-number">06</span>
+
+        <h2>HEX Decoding</h2>
+
+        <p>
+          One of the decoded values immediately looked like
+          hexadecimal data.
+        </p>
+
+        <p>
+          I converted it to plain text to see whether it contained
+          a portion of the flag.
+        </p>
+
+        <figure class="writeup-image">
+          <img
+            src="./images/icon-sketch-07-hex.png"
+            alt="Converting hexadecimal to plain text"
+          />
+
+          <figcaption>
+            Converting the hexadecimal value to plain text.
+          </figcaption>
+        </figure>
+
+        <div class="evidence-box">
+
+          <span class="evidence-label">
+            Recovered fragment
+          </span>
+
+          <code>
+            ........CTF..._.h4._..pp0s3..2b_.1s..}
+          </code>
+
+        </div>
+
+      </section>
+
+
+      <!-- =========================
+           07 — SUBSTITUTION CIPHER
+      ========================== -->
+
+      <section class="writeup-section">
+
+        <span class="section-number">07</span>
+
+        <h2>Identifying the Cipher</h2>
+
+        <p>
+          The other decoded value was:
+        </p>
+
+        <pre><code>tzhortsg...{r5.g..g.hf.....w_...k..h?.</code></pre>
+
+        <p>
+          At this point, I knew the expected flag format was:
+        </p>
+
+        <div class="flag-format">
+          <code>gaslightCTF{...}</code>
+        </div>
+
+        <p>
+          This gave me a useful clue. I compared the known
+          <code>gaslight</code> prefix with the corresponding encoded
+          characters.
+        </p>
+
+        <p>
+          After investigating the transformation, I identified it as
+          a <strong>monoalphabetic substitution cipher</strong>.
+        </p>
+
+        <p>
+          Applying the substitution to the encoded value produced
+          another partial flag:
+        </p>
+
+        <pre><code>gaslight...{i5.t..t.sf.....w_...k..s?.</code></pre>
+
+      </section>
+
+
+      <!-- =========================
+           08 — COMBINING THE CLUES
+      ========================== -->
+
+      <section class="writeup-section">
+
+        <span class="section-number">08</span>
+
+        <h2>Combining the Clues</h2>
+
+        <p>
+          At this point, I had two partial values extracted from the
+          different metadata clues.
+        </p>
+
+        <p>
+          The first recovered fragment was:
+        </p>
+
+        <pre><code>........CTF..._.h4._..pp0s3..2b_.1s..}</code></pre>
+
+        <p>
+          The second recovered fragment was:
+        </p>
+
+        <pre><code>gaslight...{i5.t..t.sf.....w_...k..s?.</code></pre>
+
+        <p>
+          Combining the two pieces produced the complete flag, and after sumbition the result is:
+        </p>
+
+        <figure class="writeup-image">
+          <img
+            src="./images/icon-sketch-08-final-flag.png"
+            alt="Final flag reconstruction"
+          />
+
+          <figcaption>
+            Final flag verification.
+          </figcaption>
+        </figure>
+
+      </section>
+
+
+      <!-- =========================
+           09 — FINAL FLAG
+      ========================== -->
+
+      <section class="writeup-section">
+
+        <span class="section-number">09</span>
+
+        <h2>Final Flag</h2>
+
+        <p>
+          The final reconstructed flag is:
+        </p>
+
+        <div class="flag-box">
+
+          <span class="flag-label">
+            FLAG
+          </span>
+
+          <code>
+            gaslightCTF{i5_th4t_sfpp0s3w_2b_k1ss?}
+          </code>
+
+        </div>
+
+      </section>
+
+
+      <!-- =========================
+           10 — CONCLUSION
+      ========================== -->
+
+      <section class="writeup-section writeup-conclusion">
+
+        <span class="section-number">10</span>
+
+        <h2>Conclusion</h2>
+
+        <p>
+          This challenge started with a seemingly ordinary PNG icon.
+          The important information was hidden inside the image metadata
+          rather than being directly visible in the image.
+        </p>
+
+        <p>
+          By inspecting the metadata with ExifTool, decoding the
+          Base64 values, converting the hexadecimal fragment, and
+          identifying the monoalphabetic substitution cipher, the
+          hidden flag could be reconstructed.
+        </p>
+
+        <p class="conclusion-line">
+          That's it for this writeup. See you in a harder one!
+        </p>
+
+      </section>
+
+    </main>
+
+  </body>
+</html>
