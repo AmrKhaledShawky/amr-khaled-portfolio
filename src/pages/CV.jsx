@@ -1,4 +1,5 @@
 import Footer from "../components/Footer.jsx";
+import { publicAsset } from "../utils/paths.js";
 
 function CV() {
   return (
@@ -10,7 +11,7 @@ function CV() {
           <p className="page-intro">You can download my current CV below.</p>
         </header>
 
-        <a href="/amr.pdf" download className="cv-button">
+        <a href={publicAsset("amr.pdf")} download className="cv-button">
           Download CV
         </a>
       </section>

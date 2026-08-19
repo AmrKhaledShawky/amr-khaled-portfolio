@@ -1,9 +1,11 @@
+import { publicAsset } from "../utils/paths.js";
+
 function Home() {
   return (
     <main className="home-page">
       <section className="hero" aria-labelledby="home-title">
         <div className="profile-container">
-          <img src="/profile.jpeg" alt="Amr Khaled" className="profile-image" />
+          <img src={publicAsset("profile.jpeg")} alt="Amr Khaled" className="profile-image" />
         </div>
 
         <h1 id="home-title">Amr Khaled</h1>

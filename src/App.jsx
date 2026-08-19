@@ -7,11 +7,12 @@ import Research from "./pages/Research.jsx";
 import WriteupDetail from "./pages/WriteupDetail.jsx";
 import Writeups from "./pages/Writeups.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
+import { siteBase } from "./utils/paths.js";
 import "./App.css";
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={siteBase}>
       <ScrollToTop />
 
       <div className="app">

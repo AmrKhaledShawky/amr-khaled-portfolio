@@ -25,7 +25,7 @@ function resolveEmbeddedUrl(value, baseUrl) {
 function getBodyMarkup(html, sourcePath) {
   const parser = new DOMParser();
   const document = parser.parseFromString(html, "text/html");
-  const baseUrl = new URL(sourcePath, window.location.origin);
+  const baseUrl = new URL(sourcePath, window.location.href);
 
   document.body.querySelector("header")?.remove();
 
