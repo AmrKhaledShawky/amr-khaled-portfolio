@@ -1,17 +1,17 @@
 import { publicAsset } from "../utils/paths.js";
 
 export const projects = [
-  {
-    id: "placeholder-project",
-    title: "Placeholder Project",
-    image: publicAsset("projects/images/placeholder-project.svg"),
-    category: "Other",
-    technologies: ["Technology"],
-    date: "2026-08",
-    tags: ["Placeholder", "Template"],
-    github: "",
-    demo: "",
-    detailsPath: "",
-    isPlaceholder: true,
-  },
+  // Add real project entries here later.
+  // Example:
+  // {
+  //   id: "project-id",
+  //   title: "Project Name",
+  //   image: publicAsset("projects/images/project-name.png"),
+  //   field: "Cybersecurity",
+  //   date: "2026-08-01",
+  // },
 ];
+
+export const projectImagePlaceholder = publicAsset(
+  "projects/images/placeholder-project.svg",
+);

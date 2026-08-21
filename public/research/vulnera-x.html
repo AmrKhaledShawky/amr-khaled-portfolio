@@ -1,0 +1,785 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>VulnEra-X Research</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+
+      --bg: #080b12;
+      --surface: #0f141d;
+      --surface-soft: #141b27;
+
+      --border: rgba(255, 255, 255, 0.12);
+
+      --text: #f1f1f1;
+      --muted: #aeb6c5;
+
+      --accent: #ffa600;
+      --accent-soft: #ffd28a;
+
+      --green: #4ade80;
+      --blue: #60a5fa;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 40px 24px 96px;
+
+      background: var(--bg);
+      color: var(--text);
+
+      font:
+        16px/1.75 system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+    }
+
+    main {
+      width: 100%;
+    }
+
+    section {
+      margin-bottom: 64px;
+    }
+
+    h1,
+    h2,
+    h3 {
+      line-height: 1.25;
+    }
+
+    h1 {
+      margin: 0 0 18px;
+      color: var(--accent);
+      font-size: clamp(2.3rem, 6vw, 4rem);
+    }
+
+    h2 {
+      margin: 0 0 22px;
+      font-size: 1.8rem;
+      color: var(--text);
+    }
+
+    h3 {
+      margin: 34px 0 12px;
+      color: var(--accent-soft);
+      font-size: 1.2rem;
+    }
+
+    p {
+      margin: 0 0 18px;
+      color: var(--muted);
+    }
+
+    strong {
+      color: var(--text);
+    }
+
+    ul {
+      margin: 16px 0 0;
+      padding-left: 22px;
+    }
+
+    li {
+      margin-bottom: 10px;
+      color: var(--muted);
+    }
+
+    li::marker {
+      color: var(--accent);
+    }
+
+    .research-intro {
+      margin-bottom: 64px;
+      padding-bottom: 36px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+
+      color: var(--accent);
+
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .lead {
+      max-width: 780px;
+      margin-bottom: 28px;
+
+      color: #c9d0dc;
+      font-size: 1.08rem;
+    }
+
+    .status-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+
+      margin-top: 24px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+
+      padding: 6px 11px;
+
+      border: 1px solid rgba(255, 166, 0, 0.3);
+      border-radius: 999px;
+
+      background: rgba(255, 166, 0, 0.08);
+      color: var(--accent-soft);
+
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .badge.status {
+      border-color: rgba(255, 166, 0, 0.42);
+      color: var(--accent);
+    }
+
+    .research-box {
+      margin-top: 24px;
+      padding: 22px;
+
+      border: 1px solid var(--border);
+      border-radius: 10px;
+
+      background: var(--surface);
+    }
+
+    .research-box h3 {
+      margin-top: 0;
+    }
+
+    .highlight {
+      border-left: 3px solid var(--accent);
+      background: var(--surface-soft);
+    }
+
+    .research-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+
+      margin-top: 24px;
+    }
+
+    .research-card {
+      padding: 20px;
+
+      border: 1px solid var(--border);
+      border-radius: 9px;
+
+      background: var(--surface);
+
+      transition:
+        transform 0.2s ease,
+        border-color 0.2s ease;
+    }
+
+    .research-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 166, 0, 0.35);
+    }
+
+    .research-card h3 {
+      margin: 0 0 9px;
+      font-size: 1.05rem;
+    }
+
+    .research-card p {
+      margin: 0;
+      font-size: 0.94rem;
+    }
+
+    .comparison {
+      width: 100%;
+      margin-top: 26px;
+
+      border-collapse: collapse;
+      overflow: hidden;
+
+      border: 1px solid var(--border);
+      border-radius: 9px;
+
+      background: var(--surface);
+    }
+
+    .comparison th,
+    .comparison td {
+      padding: 13px 15px;
+
+      border-bottom: 1px solid var(--border);
+
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .comparison th {
+      color: var(--accent);
+
+      background: rgba(255, 166, 0, 0.07);
+
+      font-size: 0.85rem;
+    }
+
+    .comparison td {
+      color: var(--muted);
+    }
+
+    .comparison tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .scope-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+
+      margin-top: 24px;
+    }
+
+    .scope-panel {
+      padding: 22px;
+
+      border: 1px solid var(--border);
+      border-radius: 10px;
+
+      background: var(--surface);
+    }
+
+    .scope-panel h3 {
+      margin-top: 0;
+    }
+
+    .research-note {
+      margin-top: 26px;
+      padding: 18px 20px;
+
+      border: 1px solid rgba(255, 166, 0, 0.25);
+      border-left: 3px solid var(--accent);
+      border-radius: 8px;
+
+      background: rgba(255, 166, 0, 0.045);
+      color: var(--muted);
+    }
+
+    .research-note strong {
+      color: var(--accent-soft);
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 32px 18px 64px;
+      }
+
+      section {
+        margin-bottom: 48px;
+      }
+
+      .research-grid,
+      .scope-columns {
+        grid-template-columns: 1fr;
+      }
+
+      .comparison {
+        display: block;
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+
+    <!-- =====================================================
+         RESEARCH INTRODUCTION
+    ====================================================== -->
+
+    <section class="research-intro">
+
+      <p class="eyebrow">Research & Development</p>
+
+      <h1>VulnEra-X</h1>
+
+      <p class="lead">
+        An AI-powered secure coding platform exploring intelligent,
+        context-aware vulnerability detection, hardcoded secret detection,
+        explainable security recommendations, and personalized secure-coding
+        assistance throughout the software development lifecycle.
+      </p>
+
+      <div class="status-row">
+        <span class="badge status">Ongoing Research</span>
+        <span class="badge">Application Security</span>
+        <span class="badge">Artificial Intelligence</span>
+        <span class="badge">Secure Coding</span>
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         OVERVIEW
+    ====================================================== -->
+
+    <section>
+
+      <h2>Research Overview</h2>
+
+      <p>
+        AI-assisted software development is changing how quickly developers
+        produce code. Large Language Models and code-generation assistants can
+        significantly accelerate development, but generated code may still
+        introduce insecure programming patterns, exposed credentials,
+        authorization weaknesses, and other vulnerabilities.
+      </p>
+
+      <p>
+        VulnEra-X investigates how artificial intelligence can be integrated
+        directly into the secure-development workflow to identify security
+        problems earlier and provide developers with more contextual and
+        understandable feedback.
+      </p>
+
+      <p>
+        Rather than treating security analysis only as a post-development
+        verification stage, the research explores a shift-left approach where
+        security assistance becomes part of the coding process itself.
+      </p>
+
+    </section>
+
+
+    <!-- =====================================================
+         PROBLEM
+    ====================================================== -->
+
+    <section>
+
+      <h2>Problem</h2>
+
+      <p>
+        Traditional Static Application Security Testing tools remain an
+        important part of application security, but several challenges remain
+        relevant when security analysis is integrated into modern,
+        AI-assisted development workflows.
+      </p>
+
+      <div class="research-grid">
+
+        <div class="research-card">
+          <h3>False Positives</h3>
+          <p>
+            Large volumes of inaccurate or low-value findings can create alert
+            fatigue and increase the effort required to identify genuine
+            vulnerabilities.
+          </p>
+        </div>
+
+        <div class="research-card">
+          <h3>Context Awareness</h3>
+          <p>
+            Conventional rule-driven analysis can struggle with weaknesses
+            requiring an understanding of application context, intent,
+            authorization rules, or workflow behavior.
+          </p>
+        </div>
+
+        <div class="research-card">
+          <h3>Business Logic Vulnerabilities</h3>
+          <p>
+            Workflow manipulation and authorization-related weaknesses are
+            difficult to represent using simple vulnerability patterns.
+          </p>
+        </div>
+
+        <div class="research-card">
+          <h3>Developer Feedback</h3>
+          <p>
+            Security findings are often delivered as technical alerts rather
+            than explanations designed to help developers understand and avoid
+            similar mistakes.
+          </p>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         RESEARCH GAP
+    ====================================================== -->
+
+    <section>
+
+      <h2>Research Gap</h2>
+
+      <p>
+        The comparative study examined several established application
+        security platforms, including Semgrep, GitHub CodeQL, Snyk Code,
+        Checkmarx One, and SonarQube.
+      </p>
+
+      <p>
+        The analysis identified three areas that motivate further
+        investigation.
+      </p>
+
+      <div class="research-box highlight">
+
+        <h3>01 — Business Logic Detection</h3>
+
+        <p>
+          Business-logic vulnerability detection remains limited,
+          undocumented, or emerging across many existing static-analysis
+          platforms.
+        </p>
+
+      </div>
+
+      <div class="research-box highlight">
+
+        <h3>02 — Detection Evidence</h3>
+
+        <p>
+          Although security platforms frequently make claims regarding
+          detection quality, independently published quantitative evidence is
+          not consistently available across the evaluated tools.
+        </p>
+
+      </div>
+
+      <div class="research-box highlight">
+
+        <h3>03 — Personalized Security Learning</h3>
+
+        <p>
+          Existing educational features generally provide generic
+          vulnerability guidance rather than a personalized learning loop that
+          tracks recurring developer mistakes and adapts future security
+          education accordingly.
+        </p>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         PROPOSED APPROACH
+    ====================================================== -->
+
+    <section>
+
+      <h2>Proposed Approach</h2>
+
+      <p>
+        VulnEra-X proposes an AI-assisted static security analysis platform
+        centered around the developer and integrated into the development
+        workflow.
+      </p>
+
+      <div class="research-grid">
+
+        <div class="research-card">
+          <h3>Real-Time Analysis</h3>
+          <p>
+            Analyze source code during development so that security findings
+            can be surfaced before code reaches later deployment stages.
+          </p>
+        </div>
+
+        <div class="research-card">
+          <h3>Context-Aware Detection</h3>
+          <p>
+            Investigate LLM-assisted reasoning for understanding code semantics
+            and vulnerabilities that depend on broader application context.
+          </p>
+        </div>
+
+        <div class="research-card">
+          <h3>Secret Detection</h3>
+          <p>
+            Identify exposed API keys, authentication tokens, passwords,
+            database credentials, private keys, and other sensitive values.
+          </p>
+        </div>
+
+        <div class="research-card">
+          <h3>Explainable Findings</h3>
+          <p>
+            Provide understandable explanations covering the vulnerability,
+            security impact, root cause, and recommended remediation.
+          </p>
+        </div>
+
+        <div class="research-card">
+          <h3>Risk Prioritization</h3>
+          <p>
+            Evaluate findings according to severity, exploitability, and
+            surrounding code context to help prioritize remediation.
+          </p>
+        </div>
+
+        <div class="research-card">
+          <h3>Personalized Learning</h3>
+          <p>
+            Track recurring security mistakes and use them to generate
+            personalized summaries, learning material, and adaptive quizzes.
+          </p>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         RESEARCH OBJECTIVES
+    ====================================================== -->
+
+    <section>
+
+      <h2>Research Objectives</h2>
+
+      <ul>
+        <li>
+          Develop a real-time secure coding assistant capable of analyzing
+          source code during development.
+        </li>
+
+        <li>
+          Detect common software vulnerabilities including SQL Injection,
+          Cross-Site Scripting, CSRF, Command Injection, Path Traversal,
+          Insecure Deserialization, and SSRF.
+        </li>
+
+        <li>
+          Investigate context-aware analysis for identifying business-logic
+          vulnerabilities.
+        </li>
+
+        <li>
+          Detect hardcoded secrets before they are committed or deployed.
+        </li>
+
+        <li>
+          Investigate whether LLM-assisted contextual reasoning can reduce
+          false positives compared with rule-based approaches.
+        </li>
+
+        <li>
+          Generate explainable security findings describing impact, root cause,
+          and remediation.
+        </li>
+
+        <li>
+          Investigate personalized developer-learning mechanisms based on
+          recurring security mistakes.
+        </li>
+
+        <li>
+          Support the analysis of both human-written and AI-generated source
+          code.
+        </li>
+      </ul>
+
+    </section>
+
+
+    <!-- =====================================================
+         SCOPE
+    ====================================================== -->
+
+    <section>
+
+      <h2>Research Scope</h2>
+
+      <p>
+        The current research focuses on AI-assisted static source-code
+        security analysis during software development.
+      </p>
+
+      <div class="scope-columns">
+
+        <div class="scope-panel">
+
+          <h3>In Scope</h3>
+
+          <ul>
+            <li>AI-assisted static source-code analysis</li>
+            <li>Context-aware vulnerability detection</li>
+            <li>Business-logic vulnerability research</li>
+            <li>Hardcoded secret detection</li>
+            <li>Vulnerability classification</li>
+            <li>AI-based severity assessment</li>
+            <li>Root-cause analysis</li>
+            <li>Secure-coding recommendations</li>
+            <li>Human-readable explanations</li>
+            <li>Security report generation</li>
+            <li>Personalized developer learning</li>
+            <li>Human-written and AI-generated code</li>
+          </ul>
+
+        </div>
+
+        <div class="scope-panel">
+
+          <h3>Outside Current Scope</h3>
+
+          <ul>
+            <li>Dynamic Application Security Testing</li>
+            <li>Interactive Application Security Testing</li>
+            <li>Runtime application monitoring</li>
+            <li>Automated penetration testing</li>
+            <li>Malware analysis</li>
+            <li>Network traffic analysis</li>
+            <li>Cloud and IaC security</li>
+            <li>Container runtime protection</li>
+            <li>SOC monitoring</li>
+            <li>Automatic source-code modification</li>
+            <li>Production security enforcement</li>
+          </ul>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         EVALUATION DIRECTION
+    ====================================================== -->
+
+    <section>
+
+      <h2>Evaluation Direction</h2>
+
+      <p>
+        The research defines measurable targets for evaluating whether the
+        proposed system provides meaningful security and developer-workflow
+        improvements.
+      </p>
+
+      <div class="research-grid">
+
+        <div class="research-card">
+          <h3>Detection Performance</h3>
+          <p>
+            Evaluate the system against defined vulnerability classes and
+            compare false-positive behavior with an established baseline.
+          </p>
+        </div>
+
+        <div class="research-card">
+          <h3>Real-Time Experience</h3>
+          <p>
+            Evaluate whether analysis can provide sufficiently fast feedback
+            for practical use during development.
+          </p>
+        </div>
+
+        <div class="research-card">
+          <h3>Developer Learning</h3>
+          <p>
+            Evaluate personalized summaries and adaptive learning generated
+            from recurring security mistakes.
+          </p>
+        </div>
+
+        <div class="research-card">
+          <h3>End-to-End System</h3>
+          <p>
+            Demonstrate a complete workflow from developer interaction through
+            vulnerability analysis, explanation, and security reporting.
+          </p>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         CURRENT STATUS
+    ====================================================== -->
+
+    <section>
+
+      <h2>Current Research Status</h2>
+
+      <div class="research-note">
+
+        <strong>Ongoing Research.</strong>
+
+        VulnEra-X is currently under active research and development.
+        The research foundation, problem analysis, proposed solution,
+        competitor analysis, research-gap identification, MVP prioritization,
+        and initial system requirements have been established.
+
+        Implementation and experimental evaluation remain part of the ongoing
+        work.
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         TEAM
+    ====================================================== -->
+
+    <section>
+
+      <h2>Research Team</h2>
+
+      <p>
+        VulnEra-X is being developed as a collaborative research and
+        engineering project by:
+      </p>
+
+      <ul>
+        <li>Amr Khaled Mohamed Shawky Abdo</li>
+        <li>Basmala Tarek Elkady</li>
+        <li>Hoda Mahmoud Saad</li>
+        <li>Fares Mohammed Hassan Elsabagh</li>
+        <li>Mohamed Alaaeldin Abdelnaby</li>
+        <li>Omar Islam Mahmoud</li>
+      </ul>
+
+      <h3>Supervision</h3>
+
+      <p>
+        Dr. Ahmed Shalaby<br />
+        Dr. Essam Abdellatef
+      </p>
+
+    </section>
+
+  </main>
