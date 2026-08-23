@@ -1,4 +1,4 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 
 const indexPath = "dist/index.html";
 const fallbackPath = "dist/404.html";
@@ -28,6 +28,8 @@ const routeHtml = indexHtml
 
 await Promise.all(
   writeupRoutes.map(async (slug) => {
-    await writeFile(`${writeupsDirectory}/${slug}`, routeHtml);
+    const routeDirectory = `${writeupsDirectory}/${slug}`;
+    await mkdir(routeDirectory, { recursive: true });
+    await writeFile(`${routeDirectory}/index.html`, routeHtml);
   }),
 );
