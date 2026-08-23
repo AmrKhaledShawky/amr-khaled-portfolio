@@ -1,0 +1,1117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Unrotated - z0d1ak CTF Writeup</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080b12;
+      --surface: #0f141d;
+      --surface-soft: #141b27;
+      --border: rgba(255, 255, 255, 0.12);
+      --text: #f1f1f1;
+      --muted: #aeb6c5;
+      --accent: #ffa600;
+      --accent-soft: #ffd28a;
+      --green: #4ade80;
+      --green-soft: rgba(74, 222, 128, 0.08);
+      --danger: #fb7185;
+      --blue: #60a5fa;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 72px 24px 96px;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.75 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    header {
+      margin-bottom: 50px;
+      padding-bottom: 30px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3 { line-height: 1.25; }
+
+    h1 {
+      margin: 0 0 16px;
+      color: var(--accent);
+      font-size: clamp(2.4rem, 6vw, 4rem);
+    }
+
+    h2 {
+      margin: 52px 0 18px;
+      font-size: 1.8rem;
+    }
+
+    h3 {
+      margin: 32px 0 12px;
+      color: var(--accent-soft);
+      font-size: 1.2rem;
+    }
+
+    p { color: var(--muted); }
+
+    strong { color: var(--text); }
+
+    code { color: var(--accent-soft); }
+
+    a { color: var(--accent); }
+
+    .hero-image {
+      width: 100%;
+      display: block;
+      margin: 28px 0 30px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+      object-fit: contain;
+    }
+
+    .metadata {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 28px;
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--surface);
+    }
+
+    .metadata div { min-width: 0; }
+
+    .metadata dt {
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .metadata dd {
+      margin: 2px 0 0;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .writeup-image {
+      width: 100%;
+      height: auto;
+      display: block;
+      margin: 28px 0 8px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      object-fit: contain;
+    }
+
+    .image-caption {
+      margin: 0 0 28px;
+      color: #777f8d;
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    figure { margin: 0; }
+
+    .answer {
+      margin: 22px 0;
+      padding: 18px 20px;
+      border: 1px solid rgba(255, 166, 0, 0.25);
+      border-left: 3px solid var(--accent);
+      border-radius: 8px;
+      background: rgba(255, 166, 0, 0.05);
+    }
+
+    .answer-label {
+      margin-bottom: 5px;
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .answer-value {
+      color: var(--text);
+      font-size: 1.05rem;
+      font-weight: 700;
+      word-break: break-word;
+    }
+
+    pre {
+      overflow-x: auto;
+      margin: 22px 0;
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #0b0f16;
+      color: #e7edf6;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    pre code { color: #e7edf6; }
+
+    blockquote {
+      margin: 28px 0;
+      padding: 16px 20px;
+      border-left: 3px solid var(--accent);
+      color: var(--accent-soft);
+      background: var(--surface-soft);
+    }
+
+    ol, ul { padding-left: 24px; }
+
+    li {
+      margin-bottom: 9px;
+      color: var(--muted);
+    }
+
+    li::marker {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* Evidence callout */
+    .evidence-note {
+      margin: 24px 0;
+      padding: 16px 18px;
+      border: 1px solid rgba(96, 165, 250, 0.2);
+      border-left: 3px solid var(--blue);
+      border-radius: 8px;
+      background: rgba(96, 165, 250, 0.05);
+    }
+
+    .evidence-note strong { color: #bfdbfe; }
+
+    /* Visual kill chain */
+    .kill-chain {
+      display: grid;
+      gap: 12px;
+      margin: 30px 0;
+    }
+
+    .chain-step {
+      position: relative;
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      gap: 16px;
+      align-items: center;
+      padding: 16px 18px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background:
+        linear-gradient(90deg, rgba(255, 166, 0, 0.08), transparent 48%),
+        var(--surface);
+    }
+
+    .chain-step::after {
+      content: "↓";
+      position: absolute;
+      left: 22px;
+      bottom: -25px;
+      color: var(--accent);
+      font-size: 1.35rem;
+      font-weight: 900;
+      z-index: 2;
+    }
+
+    .chain-step:last-child::after { display: none; }
+
+    .chain-number {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255, 166, 0, 0.45);
+      border-radius: 50%;
+      background: rgba(255, 166, 0, 0.08);
+      color: var(--accent);
+      font-weight: 900;
+    }
+
+    .chain-content strong {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--text);
+    }
+
+    .chain-content span {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .chain-tag {
+      display: inline-block;
+      margin-top: 6px;
+      padding: 2px 8px;
+      border: 1px solid rgba(255, 166, 0, 0.25);
+      border-radius: 999px;
+      color: var(--accent-soft);
+      background: rgba(255, 166, 0, 0.05);
+      font: 0.78rem/1.5 "Courier New", monospace;
+    }
+
+    /* Final flag: intentionally contains only the flag */
+    .flag-card {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 118px;
+      margin-top: 28px;
+      padding: 28px;
+      border: 1px solid rgba(74, 222, 128, 0.35);
+      border-radius: 14px;
+      background:
+        linear-gradient(135deg, rgba(74, 222, 128, 0.07), rgba(255, 166, 0, 0.025)),
+        var(--surface);
+      box-shadow: 0 0 0 1px rgba(74, 222, 128, 0.03), 0 12px 40px rgba(0,0,0,0.18);
+    }
+
+    .flag-card code {
+      display: block;
+      color: var(--green);
+      font-family: "Courier New", monospace;
+      font-size: 1.05rem;
+      font-weight: 800;
+      text-align: center;
+      word-break: break-all;
+    }
+
+    .answers-table-wrapper {
+      width: 100%;
+      margin-top: 24px;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+    }
+
+    .answers-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--surface);
+    }
+
+    .answers-table th,
+    .answers-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .answers-table th {
+      color: var(--accent);
+      background: rgba(255, 166, 0, 0.07);
+      font-size: 0.82rem;
+      text-transform: uppercase;
+    }
+
+    .answers-table td { color: var(--muted); }
+
+    .answers-table td:first-child {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .answers-table tr:last-child td { border-bottom: 0; }
+
+    .section-divider {
+      height: 1px;
+      margin: 50px 0;
+      background: var(--border);
+    }
+
+    .gap-list {
+      margin-top: 20px;
+      padding: 20px 22px;
+      border: 1px solid rgba(251, 191, 36, 0.2);
+      border-radius: 10px;
+      background: rgba(251, 191, 36, 0.045);
+    }
+
+    .gap-list li { color: var(--muted); }
+
+    @media (max-width: 620px) {
+      body { padding: 42px 18px 64px; }
+
+      .metadata { grid-template-columns: 1fr; }
+
+      h1 { font-size: 2.6rem; }
+
+      h2 { font-size: 1.55rem; }
+
+      pre { font-size: 0.8rem; }
+
+      .chain-step {
+        grid-template-columns: 46px 1fr;
+        gap: 12px;
+      }
+
+      .chain-number {
+        width: 38px;
+        height: 38px;
+      }
+
+      .chain-step::after { left: 16px; }
+
+      .answers-table { min-width: 650px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <p class="eyebrow">DFIR Challenge Writeup</p>
+    <h1>Unrotated</h1>
+
+    <p>
+      A multi-stage Digital Forensics and Incident Response investigation from the
+      <strong>z0d1ak CTF</strong>.
+    </p>
+
+    <img
+      class="hero-image"
+      src="images/unrotated.png"
+      alt="Unrotated CTF challenge cover"
+    />
+
+    <dl class="metadata">
+      <div>
+        <dt>Platform</dt>
+        <dd>z0d1ak CTF</dd>
+      </div>
+      <div>
+        <dt>Type</dt>
+        <dd>Digital Forensics</dd>
+      </div>
+      <div>
+        <dt>Difficulty</dt>
+        <dd>Medium</dd>
+      </div>
+      <div>
+        <dt>Focus</dt>
+        <dd>DFIR / Incident Response</dd>
+      </div>
+      <div>
+        <dt>Questions</dt>
+        <dd>7</dd>
+      </div>
+      <div>
+        <dt>Status</dt>
+        <dd>Solved</dd>
+      </div>
+    </dl>
+  </header>
+
+  <main>
+
+    <h2>Introduction</h2>
+
+    <p>
+      Hello there! It's me again, back with another CTF competition —
+      <strong>z0d1ak</strong>.
+    </p>
+
+    <p>
+      This time, I focused on the <strong>DFIR challenges</strong>, and we're going
+      to solve one of them together: <strong>Unrotated</strong>.
+    </p>
+
+    <p>
+      The challenge gives us a ZIP archive containing several evidence sources:
+      identity records, gateway logs, collaboration audit data, a directory database,
+      governance records, repository access logs, host artifacts, and network telemetry.
+      We have to connect those artifacts to answer seven questions and recover the flag.
+    </p>
+
+    <blockquote>
+      To solve these questions, I decided to follow the attack kill chain instead of
+      treating each question as a separate problem. And honestly, this turned out to
+      be the right approach.
+    </blockquote>
+
+    <h3>The Seven Questions</h3>
+
+    <ol>
+      <li>Which emergency-rotation credential became the intrusion's initial access path?</li>
+      <li>When did the first confirmed intrusion session authenticate successfully?</li>
+      <li>Which application-local identity provided persistence?</li>
+      <li>Which legitimate change record was misappropriated as cover?</li>
+      <li>Which delegated runner job marks the host compromise?</li>
+      <li>What operation name and external rendezvous were attributed to that execution?</li>
+      <li>Which non-production hostname received the follow-on access attempt?</li>
+    </ol>
+
+    <div class="evidence-note">
+      <strong>Investigation approach:</strong>
+      The important part of this challenge is correlation. A single artifact rarely gives
+      the whole answer. The useful trail comes from joining identifiers such as the token
+      fingerprint, actor UUID, request IDs, change reference, runner job ID, process
+      reference, route cache, socket mapping, and network flow.
+    </div>
+
+    <div class="section-divider"></div>
+
+    <h2>1. Finding the Initial Access</h2>
+
+    <p>
+      I started by looking at the identity side of the environment. The partner registry
+      contains two normal partner credentials:
+    </p>
+
+    <pre><code>stormwire-pager
+tide-model-vendor</code></pre>
+
+    <p>
+      That alone does not give us anything malicious. I then checked
+      <code>identity/rotation_manifest.csv</code> and looked for entries that were scheduled
+      for rotation but did not have a <code>completed_utc</code> value.
+    </p>
+
+    <pre><code>tide-model-vendor
+stormwire-pager
+depth-chart-archive</code></pre>
+
+    <p>
+      The first two have explicit exception notes explaining why their rotation was still
+      pending. <code>depth-chart-archive</code> is different, it has no completion timestamp,
+      and its review note says the owner reported the connector retired.
+    </p>
+
+    <figure>
+      <img
+        class="writeup-image"
+        src="images/unrotated-01-credential-record.png"
+        alt="Rotation manifest record for depth-chart-archive"
+      />
+      <figcaption class="image-caption">
+        The suspicious rotation-manifest entry for <code>depth-chart-archive</code>.
+      </figcaption>
+    </figure>
+
+    <p>
+      And then I noticed something even more interesting: there was
+      <strong>no corresponding entry for this credential in the partner registry</strong>.
+    </p>
+
+    <p>
+      So we have a credential that was supposedly retired, was not completed in the
+      rotation manifest, and was not represented by the normal partner registry.
+    </p>
+
+    <blockquote>
+      <strong>Who the hell is this?</strong>
+    </blockquote>
+
+    <p>
+      That was enough for me to stop treating it as normal configuration and start
+      following the credential's fingerprint:
+    </p>
+
+    <pre><code>af6717eb72a9c4eeb79b</code></pre>
+
+    <p>
+      Searching for that fingerprint in the gateway activity gave us the first real
+      thread to pull.
+    </p>
+
+    <figure>
+      <img
+        class="writeup-image"
+        src="images/unrotated-02-activity.png"
+        alt="Gateway activity for the suspicious credential fingerprint"
+      />
+      <figcaption class="image-caption">
+        Gateway activity tied to the <code>depth-chart-archive</code> token fingerprint.
+      </figcaption>
+    </figure>
+
+    <p>
+      The sequence is clear: the token first authenticates, then the same principal
+      performs reconnaissance, creates a new principal, and adds that principal to
+      <code>platform-admins</code>.
+    </p>
+
+    <div class="answer">
+      <div class="answer-label">Answer 1</div>
+      <div class="answer-value">depth-chart-archive</div>
+    </div>
+
+    <h2>2. Finding the First Successful Authentication</h2>
+
+    <p>
+      Now that the suspicious credential is identified, I wanted the earliest confirmed
+      successful authentication rather than just the first suspicious action I happened
+      to notice.
+    </p>
+
+    <p>
+      The gateway log gives us the request ID:
+    </p>
+
+    <pre><code>req-5092a3f3bf6dfca2</code></pre>
+
+    <p>
+      I followed that request ID into <code>collaboration/audit.csv</code>. The matching
+      audit event is a successful <code>session_start</code> for actor
+      <code>78ea4f91-86c4-437b-8738-d6f210f8d8bb</code>.
+    </p>
+
+    <figure>
+      <img
+        class="writeup-image"
+        src="images/unrotated-03-first-login.png"
+        alt="Audit record showing the first successful authentication"
+      />
+      <figcaption class="image-caption">
+        Audit correlation using the request ID from the gateway log.
+      </figcaption>
+    </figure>
+
+    <p>
+      That gives us the first confirmed successful intrusion session:
+    </p>
+
+    <div class="answer">
+      <div class="answer-label">Answer 2</div>
+      <div class="answer-value">2026-06-11T09:26:41Z</div>
+    </div>
+
+    <p>
+      The same actor then searches for <code>remote access</code> and
+      <code>integration owner</code>, which is useful because it gives us reconnaissance
+      immediately after the initial authentication.
+    </p>
+
+    <h2>3. Finding the Persistence Identity</h2>
+
+    <p>
+      The next question is: what did the attacker create after getting in?
+    </p>
+
+    <p>
+      The original session belongs to:
+    </p>
+
+    <pre><code>78ea4f91-86c4-437b-8738-d6f210f8d8bb</code></pre>
+
+    <p>
+      Searching for this actor in the gateway log shows an administrative request:
+    </p>
+
+    <pre><code>POST /collab/admin/users</code></pre>
+
+    <p>
+      The newly created principal is:
+    </p>
+
+    <pre><code>aa839c52-32ac-4d89-af86-76e53f6f3898</code></pre>
+
+    <p>
+      At this point I followed the UUID into <code>collaboration/directory.db</code>.
+      First, I checked the database structure:
+    </p>
+
+    <figure>
+      <img
+        class="writeup-image"
+        src="images/unrotated-04-database-tables.png"
+        alt="SQLite tables in directory.db"
+      />
+      <figcaption class="image-caption">
+        The tables available in <code>directory.db</code>.
+      </figcaption>
+    </figure>
+
+    <pre><code>.tables</code></pre>
+
+    <p>
+      The important table is <code>principals</code>. I queried the exact UUID:
+    </p>
+
+    <pre><code>SELECT *
+FROM principals
+WHERE principal_uuid =
+'aa839c52-32ac-4d89-af86-76e53f6f3898';</code></pre>
+
+    <figure>
+      <img
+        class="writeup-image"
+        src="images/unrotated-05-mara-venn.png"
+        alt="SQLite result identifying mara.venn"
+      />
+      <figcaption class="image-caption">
+        The principal UUID resolves to <code>mara.venn</code>.
+      </figcaption>
+    </figure>
+
+    <p>
+      And finally...
+    </p>
+
+    <blockquote>
+      <strong>Let's see who the winner is.</strong>
+    </blockquote>
+
+    <p>
+      The UUID belongs to <strong>mara.venn</strong>. The database also shows that this
+      principal was created at <code>2026-06-12T14:08:11Z</code> and was later disabled
+      during the security review.
+    </p>
+
+    <div class="answer">
+      <div class="answer-label">Answer 3</div>
+      <div class="answer-value">mara.venn</div>
+    </div>
+
+    <h2>4. The Change Record Used as Cover</h2>
+
+    <p>
+      Creating a new privileged identity is noisy. The attacker therefore tried to make
+      the activity look like an authorized administrative change.
+    </p>
+
+    <blockquote>
+      <strong>HELLO, I'M MALICIOUS.</strong>
+    </blockquote>
+
+    <p>
+      The audit records show the malicious <code>principal_create</code> and
+      <code>group_member_add</code> events carrying:
+    </p>
+
+    <pre><code>change_ref=CHG-2147</code></pre>
+
+    <p>
+      I checked <code>governance/change_ledger.csv</code> and found the legitimate
+      change record:
+    </p>
+
+    <figure>
+      <img
+        class="writeup-image"
+        src="images/unrotated-06-change-record.png"
+        alt="CHG-2147 change ledger record"
+      />
+      <figcaption class="image-caption">
+        The legitimate <code>CHG-2147</code> record that was reused as cover.
+      </figcaption>
+    </figure>
+
+    <p>
+      The important correlation here is not simply that <code>CHG-2147</code> exists.
+      Its legitimate entry expects actor
+      <code>5418adbe-06df-4561-bf33-36b98580b16e</code> and a different subject.
+      The malicious events instead come from
+      <code>78ea4f91-86c4-437b-8738-d6f210f8d8bb</code> and target
+      <code>aa839c52-32ac-4d89-af86-76e53f6f3898</code>.
+    </p>
+
+    <p>
+      So the change reference is real, but the activity attached to it is not the
+      activity described by the legitimate change.
+    </p>
+
+    <div class="answer">
+      <div class="answer-label">Answer 4</div>
+      <div class="answer-value">CHG-2147</div>
+    </div>
+
+    <h2>5. Finding the Delegated Runner Job</h2>
+
+    <p>
+      Now we move from identity activity to execution. On
+      <code>2026-06-18</code>, the malicious principal submitted:
+    </p>
+
+    <pre><code>OR-7312</code></pre>
+
+    <p>
+      The collaboration audit record says the job was accepted and delegated to
+      <code>collab-app-01</code>, while still carrying the same
+      <code>change_ref=CHG-2147</code>.
+    </p>
+
+    <figure>
+      <img
+        class="writeup-image"
+        src="images/unrotated-07-runner-job.png"
+        alt="Runner job evidence for OR-7312"
+      />
+      <figcaption class="image-caption">
+        The delegated runner job <code>OR-7312</code> and its change reference.
+      </figcaption>
+    </figure>
+
+    <p>
+      The host journal independently contains activity for <code>OR-7312</code> on
+      <code>collab-app-01</code>. The repository accesses happen later:
+    </p>
+
+    <ul>
+      <li><code>04:02:17Z</code> — archive of <code>navigation</code></li>
+      <li><code>04:04:39Z</code> — archive of <code>identity-config</code></li>
+      <li><code>04:07:02Z</code> — attempted archive of <code>backup-orchestrator</code>, which returned <code>404</code></li>
+    </ul>
+
+    <p>
+      This timing makes <code>OR-7312</code> the delegated execution that sits immediately
+      before the repository access performed by the malicious principal.
+    </p>
+
+    <div class="answer">
+      <div class="answer-label">Answer 5</div>
+      <div class="answer-value">OR-7312</div>
+    </div>
+
+    <h2>6. Finding the External Rendezvous</h2>
+
+    <p>
+      This is where several evidence sources have to be combined. The source host is:
+    </p>
+
+    <pre><code>10.42.7.19</code></pre>
+
+    <p>
+      The host inventory identifies that address as:
+    </p>
+
+    <pre><code>collab-app-01
+environment: production</code></pre>
+
+    <p>
+      The firewall log then gives us the suspicious outbound connection:
+    </p>
+
+    <pre><code>10.42.7.19 → 203.0.113.86:8448
+process=jvm-agent
+process_ref=proc-7ae13f0c35d8
+rule=legacy-general-egress</code></pre>
+
+    <p>
+      This is especially interesting because <code>203.0.113.86:8448</code> is not one
+      of the explicitly approved egress destinations. The approved list contains only
+      the documented partner and package-mirror destinations.
+    </p>
+
+    <p>
+      The next step was to determine which volatile execution produced this connection.
+      The runner cache contains several route snapshots. The relevant image/cache
+      sequence identifies the route entry associated with:
+    </p>
+
+    <pre><code>pel-8
+starboard-3
+watch-64a7a9d8bbd9</code></pre>
+
+    <p>
+      That route corresponds to the <strong>LEAD-E</strong> line on the recovered patch
+      panel.
+    </p>
+
+    <figure>
+      <img
+        class="writeup-image"
+        src="images/unrotated-09-lead-socket.png"
+        alt="Recovered Pelagos route patch panel"
+      />
+      <figcaption class="image-caption">
+        The recovered patch panel. The orange path connects <strong>LEAD-E</strong> to
+        <strong>SOCKET-6</strong>; crossings are not junctions.
+      </figcaption>
+    </figure>
+
+    <p>
+      The next lookup is <code>host/relay_socket_legend.csv</code>:
+    </p>
+
+    <figure>
+      <img
+        class="writeup-image"
+        src="images/unrotated-10-socket-legend.png"
+        alt="Relay socket legend mapping SOCKET-6 to BLUEFIN"
+      />
+      <figcaption class="image-caption">
+        <code>SOCKET-6</code> maps to the operation name <code>BLUEFIN</code>.
+      </figcaption>
+    </figure>
+
+    <p>
+      Putting those pieces together gives:
+    </p>
+
+    <pre><code>LEAD-E
+  ↓
+SOCKET-6
+  ↓
+BLUEFIN
+  ↓
+203.0.113.86:8448</code></pre>
+
+    <div class="answer">
+      <div class="answer-label">Answer 6</div>
+      <div class="answer-value">BLUEFIN@203.0.113.86:8448</div>
+    </div>
+
+    <h2>7. Finding the Follow-On Access</h2>
+
+    <p>
+      We are almost there.
+    </p>
+
+    <p>
+      The same source host and the same suspicious process later attempt another
+      connection:
+    </p>
+
+    <pre><code>10.42.7.19 → 10.43.18.61:22
+process=jvm-agent
+process_ref=proc-7ae13f0c35d8
+action=deny
+rule=segmentation-default-deny</code></pre>
+
+    <figure>
+      <img
+        class="writeup-image"
+        src="images/unrotated-11-firewall.png"
+        alt="Firewall denial for the follow-on SSH connection"
+      />
+      <figcaption class="image-caption">
+        The follow-on SSH attempt was blocked by <code>segmentation-default-deny</code>.
+      </figcaption>
+    </figure>
+
+    <p>
+      Now we only need to resolve the destination IP. The host inventory maps
+      <code>10.43.18.61</code> to:
+    </p>
+
+    <pre><code>console-cpt-03
+environment: non-production
+owner: network-lab</code></pre>
+
+    <p>
+      So the attacker attempted a follow-on SSH connection to a non-production host,
+      but the network segmentation policy stopped it.
+    </p>
+
+    <div class="answer">
+      <div class="answer-label">Answer 7</div>
+      <div class="answer-value">console-cpt-03</div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <h2>Complete Kill Chain</h2>
+
+    <p>
+      At this point, all the pieces finally fit together. Instead of a wall of text,
+      here is the investigation as one visual chain:
+    </p>
+
+    <div class="kill-chain">
+      <div class="chain-step">
+        <div class="chain-number">01</div>
+        <div class="chain-content">
+          <strong>Initial access</strong>
+          <span>Retired-but-still-live emergency credential</span>
+          <span class="chain-tag">depth-chart-archive</span>
+        </div>
+      </div>
+
+      <div class="chain-step">
+        <div class="chain-number">02</div>
+        <div class="chain-content">
+          <strong>Successful authentication</strong>
+          <span>Integration token accepted by the collaboration gateway</span>
+          <span class="chain-tag">2026-06-11T09:26:41Z</span>
+        </div>
+      </div>
+
+      <div class="chain-step">
+        <div class="chain-number">03</div>
+        <div class="chain-content">
+          <strong>Reconnaissance</strong>
+          <span>Searches for remote access and integration ownership</span>
+          <span class="chain-tag">remote access → integration owner</span>
+        </div>
+      </div>
+
+      <div class="chain-step">
+        <div class="chain-number">04</div>
+        <div class="chain-content">
+          <strong>Persistence / privilege</strong>
+          <span>Create a human principal and add it to platform administrators</span>
+          <span class="chain-tag">mara.venn</span>
+        </div>
+      </div>
+
+      <div class="chain-step">
+        <div class="chain-number">05</div>
+        <div class="chain-content">
+          <strong>Cover story</strong>
+          <span>Malicious actions reuse a legitimate change reference</span>
+          <span class="chain-tag">CHG-2147</span>
+        </div>
+      </div>
+
+      <div class="chain-step">
+        <div class="chain-number">06</div>
+        <div class="chain-content">
+          <strong>Delegated execution</strong>
+          <span>Malicious principal submits a runner job to the production host</span>
+          <span class="chain-tag">OR-7312 → collab-app-01</span>
+        </div>
+      </div>
+
+      <div class="chain-step">
+        <div class="chain-number">07</div>
+        <div class="chain-content">
+          <strong>External rendezvous</strong>
+          <span>Suspicious JVM process reaches an unapproved external endpoint</span>
+          <span class="chain-tag">BLUEFIN → 203.0.113.86:8448</span>
+        </div>
+      </div>
+
+      <div class="chain-step">
+        <div class="chain-number">08</div>
+        <div class="chain-content">
+          <strong>Repository collection</strong>
+          <span>Two repository archives are successfully retrieved</span>
+          <span class="chain-tag">navigation + identity-config</span>
+        </div>
+      </div>
+
+      <div class="chain-step">
+        <div class="chain-number">09</div>
+        <div class="chain-content">
+          <strong>Follow-on access attempt</strong>
+          <span>SSH attempt against a non-production console is blocked</span>
+          <span class="chain-tag">console-cpt-03 :22 → DENY</span>
+        </div>
+      </div>
+    </div>
+
+    <p>
+      What started as a supposedly retired credential eventually led through
+      authentication, reconnaissance, malicious identity creation, privileged group
+      membership, abuse of a legitimate change record, delegated execution, external
+      communication, repository collection, and a blocked follow-on access attempt.
+    </p>
+
+
+    <h2>Answer Summary</h2>
+
+    <div class="answers-table-wrapper">
+      <table class="answers-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Question</th>
+            <th>Answer</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>01</td>
+            <td>Initial access credential</td>
+            <td><code>depth-chart-archive</code></td>
+          </tr>
+          <tr>
+            <td>02</td>
+            <td>First successful authentication</td>
+            <td><code>2026-06-11T09:26:41Z</code></td>
+          </tr>
+          <tr>
+            <td>03</td>
+            <td>Persistence identity</td>
+            <td><code>mara.venn</code></td>
+          </tr>
+          <tr>
+            <td>04</td>
+            <td>Misappropriated change record</td>
+            <td><code>CHG-2147</code></td>
+          </tr>
+          <tr>
+            <td>05</td>
+            <td>Delegated runner job</td>
+            <td><code>OR-7312</code></td>
+          </tr>
+          <tr>
+            <td>06</td>
+            <td>Operation / rendezvous</td>
+            <td><code>BLUEFIN@203.0.113.86:8448</code></td>
+          </tr>
+          <tr>
+            <td>07</td>
+            <td>Follow-on hostname</td>
+            <td><code>console-cpt-03</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Flag</h2>
+
+    <div class="flag-card" aria-label="Challenge flag">
+      <code>zdk{A_hUmAN_re4D5_7HE_w4KE_noT_7he_1ABE15}</code>
+    </div>
+
+    <h2>Conclusion</h2>
+
+    <p>
+      This was a really good and valuable CTF.
+    </p>
+
+    <p>
+      What I especially liked was the way the scenario was built. Instead of giving us
+      one obvious artifact and asking us to extract a flag from it, the challenge made us
+      <strong>build the story ourselves</strong> by connecting evidence from completely
+      different sources.
+    </p>
+
+    <p>
+      The biggest lesson for me was to stop looking at each artifact as an isolated piece
+      of evidence and instead follow the <strong>timeline and kill chain</strong>.
+      Once the identifiers started lining up, the investigation became much easier to
+      understand.
+    </p>
+
+    <p>
+      And honestly...
+    </p>
+
+    <blockquote>
+      <strong>I really loved the way they built the scenario.</strong> 😄
+    </blockquote>
+
+    <p>
+      It felt much more like an actual investigation than simply running a command and
+      getting a flag.
+    </p>
+
+  </main>
+</body>
+</html>

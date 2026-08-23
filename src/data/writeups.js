@@ -55,4 +55,18 @@ export const writeups = [
 
     writeupPath: publicAsset("writeups/icon-sketch.html"),
   },
+  {
+  id: "unrotated",
+  title: "Unrotated",
+  image: publicAsset("writeups/images/unrotated.png"),
+  platform: "z0d1ak CTF",
+  type: "Digital Forensics",
+  os: "N/A",
+  difficulty: "Medium",
+  date: "2026-08-23",
+  tags: [],
+  writeupPath: publicAsset("writeups/unrotated.html"),
+  labUrl: "",
+  isPlaceholder: false,
+},
 ];
