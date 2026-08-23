@@ -65,7 +65,7 @@ export const writeups = [
   difficulty: "Medium",
   date: "2026-08-23",
   tags: [],
-  writeupPath: publicAsset("writeups/unrotated.html"),
+  writeupPath: publicAsset("writeups/unrotated-content.html"),
   labUrl: "",
   isPlaceholder: false,
 },
