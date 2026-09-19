@@ -1,6 +1,10 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
+function isCleanWriteupRoute(pathname) {
+  return /^\/writeups\/[^/.]+$/.test(pathname);
+}
+
 function cleanWriteupRouteRedirect() {
   return {
     name: "clean-writeup-route-redirect",
@@ -8,7 +12,7 @@ function cleanWriteupRouteRedirect() {
       server.middlewares.use((request, response, next) => {
         const [pathname, query = ""] = request.url.split("?");
 
-        if (/^\/writeups\/[^/]+$/.test(pathname)) {
+        if (isCleanWriteupRoute(pathname)) {
           response.statusCode = 301;
           response.setHeader("Location", `${pathname}/${query ? `?${query}` : ""}`);
           response.end();
@@ -22,7 +26,7 @@ function cleanWriteupRouteRedirect() {
       server.middlewares.use((request, response, next) => {
         const [pathname, query = ""] = request.url.split("?");
 
-        if (/^\/writeups\/[^/]+$/.test(pathname)) {
+        if (isCleanWriteupRoute(pathname)) {
           response.statusCode = 301;
           response.setHeader("Location", `${pathname}/${query ? `?${query}` : ""}`);
           response.end();

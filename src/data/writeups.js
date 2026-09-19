@@ -37,6 +37,20 @@ export const writeupDifficulties = [
 
 export const writeups = [
   {
+    id: "shared-access",
+    title: "SharedAccess",
+    image: publicAsset("writeups/images/IEEE.jpg"),
+    platform: "Victories CTF",
+    type: "Digital Forensics",
+    os: "Windows",
+    difficulty: "Medium",
+    date: "2026-09-19",
+    tags: [],
+    writeupPath: publicAsset("writeups/shared-access.html"),
+    labUrl: "",
+    isPlaceholder: false,
+  },
+  {
     id: "gaslight-steganography",
 
     title: "Extracting Hidden Data from Icon",
