@@ -7,6 +7,10 @@ const writeupsDirectory = "dist/writeups";
 const writeupsDataPath = "src/data/writeups.js";
 
 const indexHtml = await readFile(indexPath, "utf8");
+const routeAssetHtml = indexHtml
+  .replaceAll('href="./icon.png"', `href="${pagesBase}icon.png"`)
+  .replaceAll('src="./assets/', `src="${pagesBase}assets/`)
+  .replaceAll('href="./assets/', `href="${pagesBase}assets/`);
 const fallbackHtml = indexHtml.replace(
   "<head>",
   `<head>\n    <base href="${pagesBase}" />`,
@@ -21,15 +25,10 @@ const writeupRoutes = [
   ),
 ].map((match) => match[1]);
 
-const routeHtml = indexHtml
-  .replaceAll('href="./icon.png"', 'href="../../icon.png"')
-  .replaceAll('src="./assets/', 'src="../../assets/')
-  .replaceAll('href="./assets/', 'href="../../assets/');
-
 await Promise.all(
   writeupRoutes.map(async (slug) => {
     const routeDirectory = `${writeupsDirectory}/${slug}`;
     await mkdir(routeDirectory, { recursive: true });
-    await writeFile(`${routeDirectory}/index.html`, routeHtml);
+    await writeFile(`${routeDirectory}/index.html`, routeAssetHtml);
   }),
 );
