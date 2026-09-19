@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SharedAccess - Victories CTF Writeup</title>
+</head>
+
+<body>
+  <header>
+    <p class="eyebrow">DFIR Challenge Writeup</p>
+    <h1>SharedAccess</h1>
+    <p>
+      A Windows forensics investigation from Victories CTF, powered by the IEEE
+      Mansoura Student Branch and EG-CERT.
+    </p>
+  </header>
+
+  <main>
+    <h2>Introduction</h2>
+
+    <p>
+      Hello everyone! It's me again, and this time I'm working on a new CTF
+      called <strong>Victories</strong>, powered by the
+      <strong>IEEE Mansoura Student Branch</strong> and <strong>EG-CERT</strong>.
+    </p>
+
+    <figure>
+      <img
+        class="writeup-image compact-writeup-image"
+        src="images/shared_access_image1.png"
+        alt="SharedAccess challenge card"
+      />
+      <figcaption class="image-caption">SharedAccess challenge card.</figcaption>
+    </figure>
+
+    <p>In this challenge, we are given access to an attacker machine and need to answer two questions:</p>
+
+    <ol>
+      <li>What is the fully qualified domain name (FQDN) associated with the remote system Evan connected to?</li>
+      <li>What build identifier was associated with the phishing page Evan was testing?</li>
+    </ol>
+
+    <div class="evidence-note">
+      <strong>Investigation angle:</strong>
+      The interesting part of this challenge is that we have the attacker's machine,
+      so we can investigate the artifacts he left behind and reconstruct parts of the
+      infrastructure used during the phishing activity.
+    </div>
+
+    <h2>Starting From Evan's Profile</h2>
+
+    <p>I started by exploring:</p>
+
+    <pre><code>C:\Users\EvanShaw</code></pre>
+
+    <p>
+      While examining the user profile, I noticed a suspicious <code>.codex</code>
+      directory. Since the challenge involved investigating how the phishing
+      infrastructure was created, I decided to investigate the Codex-related artifacts.
+    </p>
+
+    <p>I searched for other Codex-related directories and found:</p>
+
+    <pre><code>C:\Users\EvanShaw\Documents\Codex</code></pre>
+
+    <p>There was also a date-based directory:</p>
+
+    <pre><code>C:\Users\EvanShaw\Documents\Codex\2026-09-12</code></pre>
+
+    <p>This looked interesting, so I started investigating its contents.</p>
+
+    <figure>
+      <img
+        class="writeup-image"
+        src="images/shared_access_image2.png"
+        alt="Codex date directory for 2026-09-12"
+      />
+      <figcaption class="image-caption">
+        The <code>C:\Users\EvanShaw\Documents\Codex\2026-09-12</code> directory.
+      </figcaption>
+    </figure>
+
+    <h2>Following The Codex Session Trail</h2>
+
+    <p>Inside the directory, I found a session named:</p>
+
+    <pre><code>\i-want-host-small-html-website</code></pre>
+
+    <p>
+      The folder itself was empty, so I followed the connection between the Codex
+      project directory and the session history stored under:
+    </p>
+
+    <pre><code>C:\Users\EvanShaw\.codex\sessions</code></pre>
+
+    <p>I then navigated to:</p>
+
+    <pre><code>C:\Users\EvanShaw\.codex\sessions\2026\09\12</code></pre>
+
+    <p>This directory contained the JSON session files for the activity on that date.</p>
+
+    <figure>
+      <img
+        class="writeup-image"
+        src="images/shared_access_image3.png"
+        alt="Codex session files from 2026-09-12"
+      />
+      <figcaption class="image-caption">
+        Codex session files under <code>C:\Users\EvanShaw\.codex\sessions\2026\09\12</code>.
+      </figcaption>
+    </figure>
+
+    <p>After examining the available sessions, I identified the relevant session:</p>
+
+    <pre><code>rollout-2026-09-12T07-51-54-01a0961a-7f31-7631-a88d-7e07d3b91eb0</code></pre>
+
+    <p>I also found another session file containing uploaded images:</p>
+
+    <pre><code>rollout-2026-09-12T08-28-48-01a0963c-47ff-79f1-a7a1-db94650d2b91</code></pre>
+
+    <p>Since the session contained multiple images, I extracted them and examined them individually.</p>
+
+    <div class="evidence-note">
+      <strong>Note:</strong>
+      AI tools were permitted in this CTF, so I used AI to extract the embedded images
+      from the session file.
+    </div>
+
+    <figure>
+      <img
+        class="writeup-image"
+        src="images/shared_access_image4.png"
+        alt="AI-assisted extraction result for embedded session images"
+      />
+      <figcaption class="image-caption">AI-assisted extraction result.</figcaption>
+    </figure>
+
+    <p>
+      One of the extracted images contained the information required to answer the
+      second question.
+    </p>
+
+    <figure>
+      <img
+        class="writeup-image"
+        src="images/shared_access_session_image_4.png"
+        alt="Extracted session image showing the phishing build identifier"
+      />
+      <figcaption class="image-caption">
+        The extracted session image that revealed the phishing build identifier.
+      </figcaption>
+    </figure>
+
+    <div class="answer">
+      <div class="answer-label">Answer 2</div>
+      <div class="answer-value">BUILD-7429</div>
+    </div>
+
+    <p>
+      We solved the second question first, but that's completely fine. Now let's move
+      on to the FQDN.
+    </p>
+
+    <h2>Finding The Remote System</h2>
+
+    <p>While continuing the investigation, I noticed an RDP connection artifact inside:</p>
+
+    <pre><code>C:\Users\EvanShaw\Documents</code></pre>
+
+    <p>The RDP connection referenced the IP address:</p>
+
+    <pre><code>16.16.97.13</code></pre>
+
+    <figure>
+      <img
+        class="writeup-image"
+        src="images/shared_access_image6.png"
+        alt="RDP artifact referencing 16.16.97.13"
+      />
+      <figcaption class="image-caption">
+        RDP artifact referencing <code>16.16.97.13</code>.
+      </figcaption>
+    </figure>
+
+    <p>I moved to the browser artifacts located under:</p>
+
+    <pre><code>C:\Users\EvanShaw\AppData\Local\Microsoft</code></pre>
+
+    <p>and specifically investigated Microsoft Edge's browsing history.</p>
+
+    <p>The relevant Edge history database was located at:</p>
+
+    <pre><code>C:\Users\EvanShaw\AppData\Local\Microsoft\Edge\User Data\Default\History</code></pre>
+
+    <p>After examining the database, I found the hostname associated with the remote system.</p>
+
+    <figure>
+      <img
+        class="writeup-image"
+        src="images/shared_access_image7.png"
+        alt="Microsoft Edge History database showing the remote hostname"
+      />
+      <figcaption class="image-caption">
+        Microsoft Edge History database artifact containing the hostname.
+      </figcaption>
+    </figure>
+
+    <div class="answer">
+      <div class="answer-label">Answer 1</div>
+      <div class="answer-value">ec2-16-16-97-13.eu-north-1.compute.amazonaws.com</div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <h2>Answer Summary</h2>
+
+    <div class="answers-table-wrapper">
+      <table class="answers-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Question</th>
+            <th>Answer</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>01</td>
+            <td>FQDN associated with the remote system Evan connected to</td>
+            <td><code>ec2-16-16-97-13.eu-north-1.compute.amazonaws.com</code></td>
+          </tr>
+          <tr>
+            <td>02</td>
+            <td>Build identifier associated with the phishing page Evan was testing</td>
+            <td><code>BUILD-7429</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Conclusion</h2>
+
+    <p>
+      This challenge took some time to investigate, but it was a really interesting
+      one. The useful path was not a single artifact, but the connection between Codex
+      session history, extracted embedded images, RDP traces, and browser history.
+    </p>
+  </main>
+</body>
+</html>

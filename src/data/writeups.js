@@ -46,7 +46,7 @@ export const writeups = [
     difficulty: "Medium",
     date: "2026-09-19",
     tags: [],
-    writeupPath: publicAsset("writeups/shared-access.html"),
+    writeupPath: publicAsset("writeups/shared-access-content.html"),
     labUrl: "",
     isPlaceholder: false,
   },
