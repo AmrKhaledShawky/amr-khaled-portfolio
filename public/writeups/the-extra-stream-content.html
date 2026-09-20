@@ -1,0 +1,392 @@
+<header>
+  <p class="eyebrow">DFIR Challenge Writeup</p>
+
+  <h1>Hidden Traces</h1>
+
+  <p>
+    Uncovering a PowerShell persistence mechanism through NTFS Alternate Data
+    Streams, PowerShell history, and Scheduled Tasks.
+  </p>
+</header>
+
+<main>
+
+  <h2>Introduction</h2>
+
+  <p>
+    Hello everyone! It's me again, and this time I'm working on a new CTF
+    called <strong>Victories</strong>, powered by the
+    <strong>IEEE Mansoura Student Branch</strong> and
+    <strong>EG-CERT</strong>.
+  </p>
+
+  <figure>
+    <img
+      class="writeup-image compact-writeup-image"
+      src="images/stream_PH1.png"
+      alt="Victories CTF challenge card"
+    />
+    <figcaption class="image-caption">
+      Victories CTF challenge card.
+    </figcaption>
+  </figure>
+
+  <p>
+    In this challenge, we are given access to a compromised victim machine.
+    According to the challenge description, the machine was compromised
+    remotely, and the attacker attempted to erase their traces.
+  </p>
+
+  <p>
+    We are provided with two folders containing the forensic evidence.
+    The goal is to investigate the artifacts left behind by the attacker
+    and recover the hidden flag.
+  </p>
+
+  <div class="evidence-note">
+    <strong>Investigation angle:</strong>
+    The attacker attempted to clean up the machine after performing the
+    attack. This means that the investigation depends on finding artifacts
+    that survived the cleanup process.
+  </div>
+
+
+  <h2>Starting The Investigation</h2>
+
+  <p>
+    I started the investigation by examining the disk image
+    (<strong>E01</strong>) located at:
+  </p>
+
+  <pre><code>The_Extra_Stream\The Extra Stream\Image</code></pre>
+
+  <p>
+    While examining the evidence, I found something suspicious related to
+    a PowerShell script.
+  </p>
+
+  <figure>
+    <img
+      class="writeup-image"
+      src="images/stream_PH2.png"
+      alt="The two forensic evidence folders"
+    />
+    <figcaption class="image-caption">
+      The two folders provided with the challenge.
+    </figcaption>
+  </figure>
+
+
+  <h2>Identifying The Suspicious PowerShell Activity</h2>
+
+  <p>
+    The suspicious script contained a combination of PowerShell commands
+    involving <code>$PSCommandPath</code>, an Alternate Data Stream named
+    <code>fb2</code>, and <code>-EncodedCommand</code>.
+  </p>
+
+  <pre><code>Get-Content $PSCommandPath -Stream fb2
+
+powershell -EncodedCommand (Get-Content $PSCommandPath -Stream fb2)</code></pre>
+
+  <p>
+    The combination of these techniques immediately caught my attention.
+    The <code>-Stream fb2</code> parameter is used to access an
+    <strong>NTFS Alternate Data Stream (ADS)</strong>, which can store data
+    separately from the normal contents of a file.
+  </p>
+
+  <p>
+    The script then retrieves the contents of this hidden stream and passes
+    them to PowerShell through <code>-EncodedCommand</code>.
+  </p>
+
+  <p>
+    This is suspicious because an attacker can use this technique to conceal
+    data or a payload inside a file while keeping the normal file contents
+    looking harmless.
+  </p>
+
+  <figure>
+    <img
+      class="writeup-image"
+      src="images/stream_PH3.png"
+      alt="Suspicious PowerShell commands"
+    />
+    <figcaption class="image-caption">
+      Suspicious PowerShell commands referencing the hidden ADS.
+    </figcaption>
+  </figure>
+
+
+  <h2>Investigating The fb2 Alternate Data Stream</h2>
+
+  <p>
+    To understand what was hidden inside the ADS, I examined the contents
+    of the <code>fb2</code> stream.
+  </p>
+
+  <p>The stream contained the following value:</p>
+
+  <pre><code>4d46394e4d48497a583067785a47517a626e303d</code></pre>
+
+  <p>
+    At this point, the value looked like hexadecimal data, so I used
+    <strong>CyberChef</strong> to decode it.
+  </p>
+
+  <figure>
+    <img
+      class="writeup-image"
+      src="images/stream_PH4.png"
+      alt="Content of the fb2 Alternate Data Stream"
+    />
+    <figcaption class="image-caption">
+      Content extracted from the <code>fb2</code> Alternate Data Stream.
+    </figcaption>
+  </figure>
+
+  <p>
+    Decoding the Hex produced:
+  </p>
+
+  <pre><code>MF9NMHIzX0gxZGQzbn0=</code></pre>
+
+  <p>
+    The resulting value has the familiar structure of a
+    <strong>Base64-encoded</strong> string, so I decoded it again.
+  </p>
+
+  <figure>
+    <img
+      class="writeup-image"
+      src="images/stream_PH5.png"
+      alt="CyberChef decoding result"
+    />
+    <figcaption class="image-caption">
+      CyberChef decoding the Hex value and then the Base64 data.
+    </figcaption>
+  </figure>
+
+  <p>
+    The final result was:
+  </p>
+
+  <pre><code>0_M0r3_H1dd3n}</code></pre>
+
+  <p>
+    This revealed the first hidden part of the flag.
+  </p>
+
+
+  <h2>Following The PowerShell History</h2>
+
+  <p>
+    After discovering the hidden data, I wanted to determine how the
+    attacker used the PowerShell script. The next step was therefore to
+    investigate the PowerShell command history.
+  </p>
+
+  <p>
+    The PowerShell history was located at:
+  </p>
+
+  <pre><code>The_Extra_Stream\The Extra Stream\Triage\C\Users\victim1\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadline</code></pre>
+
+  <p>
+    The history file is a normal text file, so it can be opened directly
+    using a text editor.
+  </p>
+
+  <figure>
+    <img
+      class="writeup-image"
+      src="images/stream_PH6.png"
+      alt="PowerShell command history"
+    />
+    <figcaption class="image-caption">
+      PowerShell history revealing the attacker's commands.
+    </figcaption>
+  </figure>
+
+
+  <h2>Discovering The TempCleanup Scheduled Task</h2>
+
+  <p>
+    While examining the PowerShell history, I found that the attacker
+    created a scheduled task named:
+  </p>
+
+  <pre><code>TempCleanup</code></pre>
+
+  <p>
+    The task was configured to execute the PowerShell script
+    <strong>daily at 02:00</strong>.
+  </p>
+
+  <p>
+    The command also used:
+  </p>
+
+  <pre><code>-ep bypass</code></pre>
+
+  <p>
+    which configures PowerShell to use the
+    <strong>Bypass Execution Policy</strong> for that execution.
+  </p>
+
+  <p>
+    The attacker then attempted to remove the script they had created.
+    However, they did not remove the scheduled task itself.
+  </p>
+
+  <div class="evidence-note">
+    <strong>Important forensic artifact:</strong>
+    Even after the attacker deleted the script and its directory, the
+    scheduled task remained on the system. This gave us another artifact
+    to investigate and eventually led to the second part of the flag.
+  </div>
+
+  <p>
+    I therefore searched for the scheduled task inside:
+  </p>
+
+  <pre><code>C:\Windows\System32\Tasks</code></pre>
+
+
+  <h2>Investigating The Scheduled Task XML</h2>
+
+  <p>
+    Inside the task definition, I found the task associated with
+    <code>TempCleanup</code>.
+  </p>
+
+  <p>
+    When I opened the task's XML definition, I found a custom XML field
+    containing:
+  </p>
+
+  <pre><code>&lt;flagID&gt;535556465256394456455a374e455254587a46545830343d&lt;/flagID&gt;</code></pre>
+
+  <p>
+    The value looked encoded again, so I copied it into CyberChef for
+    further analysis.
+  </p>
+
+  <figure>
+    <img
+      class="writeup-image"
+      src="images/stream_PH7.png"
+      alt="TempCleanup scheduled task XML"
+    />
+    <figcaption class="image-caption">
+      The <code>TempCleanup</code> scheduled task XML containing the custom
+      <code>flagID</code> field.
+    </figcaption>
+  </figure>
+
+
+  <h2>Decoding The Second Flag Part</h2>
+
+  <p>
+    I first decoded the Hex value:
+  </p>
+
+  <pre><code>SUVFRV9DVEZ7NERTXzFTX04=</code></pre>
+
+  <p>
+    The result was another Base64-encoded value, so I decoded it again.
+  </p>
+
+  <figure>
+    <img
+      class="writeup-image"
+      src="images/stream_PH8.png"
+      alt="CyberChef decoding the second flag part"
+    />
+    <figcaption class="image-caption">
+      CyberChef decoding the second encoded flag component.
+    </figcaption>
+  </figure>
+
+  <p>
+    This produced:
+  </p>
+
+  <pre><code>IEEE_CTF{4DS_1S_N0</code></pre>
+
+  <p>
+    We now have both parts required to reconstruct the complete flag.
+  </p>
+
+
+  <div class="section-divider"></div>
+
+
+  <h2>Final Flag</h2>
+
+  <div class="flag-card">
+    <code>IEEE_CTF{4DS_1S_N0_M0r3_H1dd3n}</code>
+  </div>
+
+
+  <h2>Investigation Summary</h2>
+
+  <p>
+    The investigation followed a chain of artifacts left behind by the
+    attacker:
+  </p>
+
+  <pre><code>E01 Forensic Image
+        ↓
+PowerShell Script
+        ↓
+NTFS Alternate Data Stream (fb2)
+        ↓
+Hex → Base64
+        ↓
+First Flag Part
+        ↓
+PowerShell History
+        ↓
+TempCleanup Scheduled Task
+        ↓
+Task XML
+        ↓
+flagID
+        ↓
+Hex → Base64
+        ↓
+Second Flag Part
+        ↓
+Final Flag</code></pre>
+
+
+  <h2>Conclusion</h2>
+
+  <p>
+    This challenge was a great example of how an attacker can attempt to
+    clean up their activity while still leaving useful forensic artifacts
+    behind.
+  </p>
+
+  <p>
+    The most interesting part of the investigation was the use of an
+    <strong>NTFS Alternate Data Stream</strong> to hide encoded data inside
+    the PowerShell script. The attacker also created a scheduled task named
+    <code>TempCleanup</code> and later removed the script without removing
+    the scheduled task itself.
+  </p>
+
+  <p>
+    By following the remaining artifacts from the E01 image to the
+    PowerShell history and finally to the scheduled task XML, I was able
+    to recover both parts of the flag.
+  </p>
+
+  <p>
+    I really enjoyed this CTF. It was a great forensic investigation and
+    a fun challenge to work through.
+  </p>
+
+</main>
