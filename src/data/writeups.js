@@ -36,6 +36,20 @@ export const writeupDifficulties = [
 ];
 
 export const writeups = [
+    {
+    id: "The_Quiet_Handoff",
+    title: "The Quiet Handoff",
+    image: publicAsset("writeups/images/The_Quiet_Handoff_cover.png"),
+    platform: "Victories CTF 2026 Finals",
+    type: "Digital Forensics",
+    os: "Windows",
+    difficulty: "Medium",
+    date: "2026-09-23",
+    tags: [],
+    writeupPath: publicAsset("writeups/The-Quiet-Handoff-Content.html"),
+    labUrl: "",
+    isPlaceholder: false,
+  },
   {
     id: "shared-access",
     title: "Following the Attacker's Trail",

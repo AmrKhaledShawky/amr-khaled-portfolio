@@ -1,0 +1,444 @@
+<header>
+  <p class="eyebrow">DFIR Challenge Writeup</p>
+
+  <h1>The Quiet Handoff</h1>
+
+  <p>
+    Tracing an unauthorized remote session from PowerShell execution and
+    browser activity to sensitive file access and data exfiltration.
+  </p>
+</header>
+
+<main>
+
+  <h2>Introduction</h2>
+
+  <p>
+    Hello everyone! It's me again. This time, I participated in the
+    <strong>IEEE Victories 2026 Finals</strong>, where we secured
+    <strong>10th place</strong>.
+  </p>
+
+  <p>
+    In this writeup, I will walk through the investigation of
+    <strong>The Quiet Handoff</strong>, a DFIR challenge focused on tracing
+    suspicious activity between an employee workstation and an internal
+    Windows server.
+  </p>
+
+  <p>
+    The challenge provides Windows forensic artifacts from both the
+    <strong>workstation</strong> and the <strong>server</strong>. The objective
+    is to determine how the unauthorized activity started, which account was
+    involved, which sensitive files were accessed, and how the data was
+    ultimately transferred.
+  </p>
+
+
+  <div class="evidence-note">
+    <strong>Challenge Description:</strong>
+
+    <p>
+      Unusual activity was detected between an employee workstation and an
+      internal Windows server during normal administrative operations.
+      Investigate the supplied Windows artifacts to determine what happened,
+      identify any unauthorized activity, and assess whether sensitive data was
+      accessed or transferred.
+    </p>
+  </div>
+
+  <h2>Challenge Questions</h2>
+
+  <p>
+    The investigation was based on five questions:
+  </p>
+
+  <pre><code>1. Which script initiated the unauthorized remote session?
+2. Which account was used for the unauthorized session?
+3. Which three business files were actually read?
+4. What was the name of the archive used to exfiltrate the files?
+5. What IP and port was the data sent to?</code></pre>
+
+  <h2>Starting The Investigation</h2>
+
+  <p>
+    We were provided with two mounted evidence folders: one representing the
+    <strong>employee workstation</strong> and another representing the
+    <strong>Windows server</strong>.
+  </p>
+
+  <p>
+    Since the first objective was to determine how the unauthorized activity
+    started, I began by examining the Windows Event Logs on the workstation.
+    I used <strong>EvtxECmd</strong> to parse the event logs and then analyzed
+    the resulting CSV data using <strong>Timeline Explorer</strong>.
+  </p>
+
+  <p>
+    The System event log was parsed using:
+  </p>
+
+  <pre><code>.\EvtxECmd.exe -f "C:\The_Quiet_Handoff\Workstation\Windows\EventLogs\System.evtx" --csv "C:\The_Quiet_Handoff\Parsed"</code></pre>
+
+  <h2>Identifying Suspicious PowerShell Execution</h2>
+
+  <p>
+    While reviewing the parsed event data, I found two PowerShell executions
+    that immediately stood out.
+  </p>
+
+  <p>
+    Both commands contained suspicious execution parameters:
+  </p>
+
+  <pre><code>-NoProfile
+-ExecutionPolicy Bypass</code></pre>
+
+  <p>
+    The first command executed:
+  </p>
+
+  <pre><code>C:\ProgramData\OpsToolsV2\InventoryCheck.ps1</code></pre>
+
+  <p>
+    at:
+  </p>
+
+  <pre><code>2026-09-12 19:49:29</code></pre>
+
+  <p>
+    The second command executed:
+  </p>
+
+  <pre><code>C:\Users\Moamen\Downloads\ConfigAudit-Q3.ps1</code></pre>
+
+  <p>
+    at:
+  </p>
+
+  <pre><code>2026-09-12 19:57:24</code></pre>
+
+  <figure>
+<img
+  class="writeup-image"
+  src="images/quiet_handoff_PH4.png"
+  alt="the two suspicious PowerShell executions"
+/>
+    <figcaption class="image-caption">
+      Evidence showing the two suspicious PowerShell executions.
+    </figcaption>
+  </figure>
+
+  <p>
+    At this point, there were two possible scripts. Rather than assuming
+    which one was responsible, I needed another artifact to establish which
+    script was actually introduced by the user and subsequently executed.
+  </p>
+
+  <h2>Following The Browser Evidence</h2>
+
+  <p>
+    The next step was to investigate the user's browser activity.
+    The timeline showed Microsoft Edge activity shortly before the second
+    PowerShell execution, which made the browser history particularly
+    relevant.
+  </p>
+
+  <p>
+    The Edge artifacts were located under:
+  </p>
+
+  <pre><code>The_Quiet_Handoff\Workstation\Users\Moamen\Browser\Edge\Default</code></pre>
+
+  <p>
+    After examining the browser database, I found multiple download records
+    for a file named:
+  </p>
+
+  <pre><code>ConfigAudit-Q3.ps1</code></pre>
+
+  <p>
+    The file had been downloaded from:
+  </p>
+
+  <pre><code>http://192.168.80.131:8081/ConfigAudit-Q3.ps1</code></pre>
+
+  <figure>
+    <img
+      class="writeup-image"
+      src="images/quiet_handoff_PH1.png"
+      alt="Microsoft Edge download history"
+    />
+    <figcaption class="image-caption">
+      Microsoft Edge history showing downloads of
+      <code>ConfigAudit-Q3.ps1</code>.
+    </figcaption>
+  </figure>
+
+  <p>
+    This provided the missing link between the browser activity and the
+    suspicious PowerShell execution. The evidence showed that
+    <strong>ConfigAudit-Q3.ps1</strong> was downloaded shortly before it was
+    executed.
+  </p>
+
+  <div class="evidence-note">
+    <strong>Key finding:</strong>
+    The browser evidence allowed us to distinguish the malicious script from
+    the other suspicious PowerShell execution without relying on assumptions.
+  </div>
+
+  <h3>Answer — Question 1</h3>
+
+  <pre><code>ConfigAudit-Q3.ps1</code></pre>
+
+  <h2>Identifying The Account</h2>
+
+  <p>
+    After identifying the script, the next step was determining which account
+    was associated with the unauthorized remote session.
+  </p>
+
+  <p>
+    Returning to the parsed workstation event data, the activity associated
+    with <code>ConfigAudit-Q3.ps1</code> referenced the service account:
+  </p>
+
+  <pre><code>WIN-T7L7VJGEB3\svc_backup</code></pre>
+
+  <p>
+    Therefore, the username used for the unauthorized session was:
+  </p>
+
+  <h3>Answer — Question 2</h3>
+
+  <pre><code>svc_backup</code></pre>
+
+  <h2>Investigating The Server</h2>
+
+  <p>
+    With the initial execution and account identified, I moved to the second
+    evidence source: the Windows server.
+  </p>
+
+  <p>
+    The goal was to determine which business files were actually accessed.
+    For this, I focused on Windows Security Event Logs and specifically
+    <strong>Event ID 4663</strong>, which records attempts to access objects.
+  </p>
+
+  <p>
+    I searched for file-access events occurring after the previously
+    established execution time:
+  </p>
+
+  <pre><code>2026-09-12 19:57:24</code></pre>
+
+  <figure>
+    <img
+      class="writeup-image"
+      src="images/quiet_handoff_PH2.png"
+      alt="Windows Security Event ID 4663 showing accessed files"
+    />
+    <figcaption class="image-caption">
+      Security Event ID 4663 revealing the accessed business files.
+    </figcaption>
+  </figure>
+
+  <h2>Recovering The Accessed Business Files</h2>
+
+  <p>
+    The Event ID 4663 records revealed three business documents that were
+    actually accessed during the unauthorized activity.
+  </p>
+
+  <p>
+    The files were:
+  </p>
+
+  <pre><code>Branch_Inventory_Q3.csv
+Network_Upgrade_Plan.docx
+Vendor_Renewals_Q3.xlsx</code></pre>
+
+  <p>
+    These filenames were sorted alphabetically as required by the challenge.
+  </p>
+
+  <h3>Answer — Question 3</h3>
+
+  <pre><code>Branch_Inventory_Q3.csv,Network_Upgrade_Plan.docx,Vendor_Renewals_Q3.xlsx</code></pre>
+
+  <h2>Following The Exfiltration</h2>
+
+  <p>
+    After identifying the files that were accessed, the next objective was
+    to determine whether the attacker collected and transferred them.
+  </p>
+
+  <p>
+    The evidence showed that the accessed files were placed into a
+    <strong>7z archive</strong> named:
+  </p>
+
+  <pre><code>inventory_backup.7z</code></pre>
+
+  <p>
+    The archive was then sent to an external destination using PowerShell.
+    The relevant command referenced:
+  </p>
+
+  <pre><code>C:\ProgramData\InventoryCacheV2\inventory_backup.7z
+http://192.168.80.131:8444/upload</code></pre>
+
+  <p>
+    This provided the final pieces of the attack chain: the archive name and
+    the destination used to transfer the collected data.
+  </p>
+
+  <figure>
+    <img
+      class="writeup-image"
+      src="images/quiet_handoff_PH5.png"
+      alt="Archive and exfiltration activity"
+    />
+    <figcaption class="image-caption">
+      Evidence showing the archive and its exfiltration destination.
+    </figcaption>
+  </figure>
+
+  <h3>Answer — Question 4</h3>
+
+  <pre><code>inventory_backup.7z</code></pre>
+
+  <h3>Answer — Question 5</h3>
+
+  <pre><code>192.168.80.131:8444</code></pre>
+
+  <div class="section-divider"></div>
+
+  <h2>Final Answers</h2>
+
+ <div class="answers-table-wrapper">
+      <table class="answers-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Question</th>
+            <th>Answer</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>01</td>
+            <td>Which script initiated the unauthorized remote session?</td>
+            <td><code>ConfigAudit-Q3.ps1</code></td>
+          </tr>
+          <tr>
+            <td>02</td>
+            <td>Which account was used for the unauthorized session?</td>
+            <td><code>svc_backup</code></td>
+          </tr>
+          <tr>
+            <td>03</td>
+            <td>Which three business files were actually read?</td>
+            <td><code>Branch_Inventory_Q3.csv,Network_Upgrade_Plan.docx,Vendor_Renewals_Q3.xlsx</code></td>
+          </tr>
+          <tr>
+            <td>04</td>
+            <td>What is the name of the archive used to exfiltrate the files?
+</td>
+            <td><code>inventory_backup.7z</code></td>
+          </tr>
+          <tr>
+            <td>05</td>
+            <td>what is the IP the data was sent to?</td>
+            <td><code>192.168.80.131:8444</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  <h2>Investigation Timeline</h2>
+
+  <p>
+    The complete investigation can be summarized as a chain of correlated
+    forensic artifacts:
+  </p>
+
+  <pre><code>Workstation Event Logs
+        ↓
+Suspicious PowerShell Execution
+        ↓
+ConfigAudit-Q3.ps1
+        ↓
+Microsoft Edge Download History
+        ↓
+svc_backup Account
+        ↓
+Windows Server Security Logs
+        ↓
+Event ID 4663
+        ↓
+Three Business Files Accessed
+        ↓
+inventory_backup.7z
+        ↓
+PowerShell Exfiltration
+        ↓
+192.168.80.131:8444</code></pre>
+
+  <h2>Tools Used</h2>
+
+  <p>
+    The main tools used during the investigation were:
+  </p>
+
+  <pre><code>EvtxECmd
+Timeline Explorer</code></pre>
+
+  <h2>Conclusion</h2>
+
+  <p>
+    <strong>The Quiet Handoff</strong> was a relatively focused DFIR
+    investigation, but it demonstrated an important forensic principle:
+    individual artifacts become much more valuable when they are correlated
+    into a timeline.
+  </p>
+
+  <p>
+    The investigation started with suspicious PowerShell activity on the
+    workstation. Instead of immediately assuming which script was responsible,
+    I correlated the event timeline with Microsoft Edge download history.
+    This established that <code>ConfigAudit-Q3.ps1</code> had been downloaded
+    shortly before its execution.
+  </p>
+
+  <p>
+    From there, the associated <code>svc_backup</code> account provided the
+    identity used during the unauthorized activity. Moving to the server and
+    analyzing Security Event ID 4663 then revealed the three business files
+    that were actually accessed.
+  </p>
+
+  <p>
+    Finally, the evidence showed that those files were collected into
+    <code>inventory_backup.7z</code> and transferred to
+    <code>192.168.80.131:8444</code>.
+  </p>
+
+  <div class="evidence-note">
+    <strong>Key takeaway:</strong>
+    The investigation did not depend on a single artifact. The strongest
+    evidence came from correlating Windows event logs, browser history,
+    account information, file-access events, and PowerShell activity into
+    one consistent attack timeline.
+  </div>
+
+  <p>
+    Overall, this was a clean and enjoyable DFIR challenge. Even though the
+    evidence set was relatively small, following the artifacts in sequence
+    made it possible to reconstruct the unauthorized activity and identify
+    the complete data-exfiltration path.
+  </p>
+
+</main>
