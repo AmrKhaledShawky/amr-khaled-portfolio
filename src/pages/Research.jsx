@@ -4,8 +4,8 @@ import { research } from "../data/research.js";
 
 function Research() {
   return (
-    <main className="page">
-      <section className="content-shell narrow-shell" aria-labelledby="research-title">
+    <main className="page archive-page">
+      <section className="content-shell" aria-labelledby="research-title">
         <header className="page-header">
           <span className="page-label">03</span>
           <h1 id="research-title">Research</h1>

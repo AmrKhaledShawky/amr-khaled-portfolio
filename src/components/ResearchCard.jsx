@@ -1,9 +1,15 @@
+import { Link } from "react-router-dom";
 import ResearchStatusBadge from "./ResearchStatusBadge.jsx";
 
 function ResearchCard({ researchItem }) {
   return (
     <article className="research-card">
-      <div className="research-media">
+      <div
+        className={
+          "research-media" +
+          (researchItem.imageSurface === "light" ? " research-media-light" : "")
+        }
+      >
         <img
           src={researchItem.image}
           alt={`${researchItem.title} thumbnail`}
@@ -30,9 +36,9 @@ function ResearchCard({ researchItem }) {
         </dl>
 
         <div className="card-actions">
-          <a className="button-link" href={researchItem.researchPath}>
+          <Link className="button-link" to={`/research/${researchItem.id}`}>
             Read Research →
-          </a>
+          </Link>
         </div>
       </div>
     </article>
